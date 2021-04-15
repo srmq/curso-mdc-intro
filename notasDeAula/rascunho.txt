@@ -1,0 +1,1696 @@
+Chapter
+Automata
+
+Our touchstone model of mechanical computation is the Turing machine. A Turing machines has only two components, a CPU and a tape. We will now take the tape away and study the CPU alone.
+
+Alternatively stated, while a Turing Machine has unbounded memory, the
+devices that we use every day do not. We can ask what jobs can be done by a machine with bounded memory.
+
+Section
+
+IV.1 Finite State Machines
+
+We produce a new model of computation by modifying the definition of Turing Machine. We will strip out the capability to write, changing the tape head from read/write to read-only. This gives us insight into what can be done with states alone. It will turn out that this type of machine can do many things, but not as many as a Turing machine.
+
+Definition We will use the same type of transition tables and transition graphs as with Turing machines.
+
+Example A power switch has two states, qoff and qon and its input alphabet has one symbol, toggle.
+
+Example Operate this turnstile by puting in two tokens and then pushing through. It has three states and its input alphabet is Σ = { token, push }.
+
+As we saw with Turing machines, the states are a limited form of memory. For instance, q one is how the turnstile “remembers” that it has so far received one token.
+
+Image: The astronomical clock in Notre-Dame-de-Strasbourg Cathedral, for computing the date of Easter. Easter falls on the first Sunday after the full moon on or after the spring equinox. Calculation of this date was a great challenge for mechanisms of that time, 1843.
+
+1.3Example This vending machine dispenses items that cost 30 cents.† The picture is complex so we will show it in three layers. First are the arrows for nickels and pushing the dispense button.
+
+After receiving 30 cents and getting another nickel, this machine does something not very sensible: it stays in q 30 . In practice a machine would have further states to keep track of overages so that we could give change, but here we ignore that. Next comes the arrows for dimes
+
+and for quarters.
+
+1.4 Example This machine, when started in state q0 and fed bit strings, will keep track of the remainder modulo 4 of the number of 1’s.
+
+1.5 Definition A Finite State machine, or Finite State automata, is composed of five things, M = ⟨Q, qstart, F , Σ, ∆⟩ . They are a finite set of states Q , one of which is the start state qstart, a subset F ⊆ Q of accepting states or final states, a finite input alphabet set Σ, and a next-state function or transition function ∆ : Q × Σ → Q .
+
+This may not immediately appear to be like our definition of a Turing Machine. Some of that is because we have already defined the terms ‘alphabet’ and ‘transition function’. The other differences follow from the fact that that Finite State machines cannot write. For one thing, because Finite State machines cannot write they don’t need to move the tape for scratch work, so we’ve dropped the tape action symbols L and R.
+
+† US coins are: 1 cent coins that are not used here, nickles are 5 cents, dimes are 10 cents, and quarters are 25 cents.
+
+The other difference between Finite State machines and Turing machines is the presence of the accepting states. Consider, in the vending machine of Example 1.3, the state q 30 . It is an accepting state, meaning that the machine has seen in the input what it is looking for. The same goes for Example 1.2’s turnstile state q ready and Example 1.1’s power switch state qon . While we can design a Turing Machine to indicate a choice by arranging so that for each input the machine will halt and the only thing on the tape will be either a 1 or 0, a Finite State machine gives a decision by ending in one of these designated states. Above, we’ve pictured that the accepting states are wired a red light so that we know when a computation succeeds. In the transition graphs we denote the final states with double circles and in the transition function tables we mark them with a ‘+’.
+
+To work a Finite State machine device, put the finite-length input on the tape and press Start.
+
+The machine consumes the input, at each step deleting the prior tape character and then reading the next one. We can trace through the steps when Example 1.4’s modulo 4 machine gets the input 10110.
+
+Consequently there is no Halting problem for Finite State machines — they always halt after a number of steps equal to the length of the input. At the end, either the Accept light is on or it isn’t. If it is on then we say that the machine accepts the input string, otherwise it rejects the string.
+
+1.6 Example This machine accepts a string if and only if it contains at least two 0’s as well as an even number of 1’s. (The + next to q2 marks it as an accepting state.)
+
+This machine illustrates the key to designing Finite State machines, that each state has an intuitive meaning. The state q4 means “so far the machine has seen one 0 and an odd number of 1’s.” And q 5 means “so far the machine has seen two 0’s but an odd number of 1’s.” The drawing brings out this principle. Its first row has states that have so far seen an even number of 1’s, while the second row’s states have seen an odd number. Its first column holds states have seen no 0’s, the second column holds states have seen one, and the third column has states that have seen two 0’s.
+
+1.7 Example This machine accepts strings that are valid as decimal representations of integers. Thus, it accepts ‘21’ and ‘-707’ but does not accept ‘501-’. Both the transition graph and the table group some inputs together when they result in the same action. For instance, when in state q 0 this machine does the same thing whether the input is + or -, namely it passes into q 1.
+
+1,...,9
+q0
+ q 1
+ q 2
+ 0,..,9
++,-
+ 1,...,9
+other
+other
+other
+e
+ any
+∆
+ +, -
+ 0, . . . 9
+ else
+q 0
+ q 1
+ q 2
+ e
+q 1
+ e
+ q 2
+ e
++ q 2
+ e
+ q 2
+ e
+e
+ e
+ e
+ e
+
+1.8 Any bad input character sends the machine to the error state. e , which is a sink state, meaning that the machine never leaves that state.
+
+Our Finite State machine descriptions will usually assume that the alphabet is clear from the context. For instance, the prior example just says ‘else’. In practice we take the alphabet to be the set of characters that someone could conceivably enter, including letters such as a and A or characters such as exclamation point or open parenthesis. Thus, design of a Finite State machine up to a modern standard might use all of Unicode. But for the examples and exercises here, we will use small alphabets.
+
+Example This machine accepts strings that are members of the set { jpg, pdf, png } of filename extensions. Notice that it has more than one final state.
+
+q1
+ p
+ q2
+ g
+ q 3
+j
+q0
+ p
+ q4
+ d
+ q5
+ f
+ q 6
+n
+q7
+ g
+ q 8
+e
+
+That drawing omits many edges, the ones involving the error state e . For instance, from state q 0 any input character other than j or p is an error. (Putting in all the edges would make a mess. Cases such as this are where the transition table is better than the graph picture. But most of our machines are small and have only a few states and edges so we typically prefer the picture.)
+
+This example illustrates that for any finite language there is a Finite State machine that accepts a string if and only if it is a member of the language. The idea is to put the strings in alphabetical order, and for ones that have common prefixes have the machine step through the shared parts together, as here with pdf and png. Exercise 1.46 asks for a proof.
+
+1.9 Example Although they have no scratch memory, Finite State machines can accomplish useful work such as some kinds of arithmetic. This machine accepts strings representing a natural number that is a multiple of three, such as 15 and 5013.
+
+2,5,8
+0,3,6,9
+ q0
+ q1
+ 0,3,6,9
+1,4,7
+1,4,7
+2,5,8
+1,4,7
+q2
+2,5,8
+0,3,6,9
+
+Because q 0 is an accepting state, this machine accepts the empty string. Exercise 1.24 asks for a modification of this machine to accept only non-empty strings.
+
+1.11Example This is a simplified version of how phone numbers used to be handled in North America. Consider the number 1-802-555-0101. The iniital 1 signifies that the call should leave the local exchange office to go to the long lines. The 802 is an area code; the system can tell this is so because its second digit is either 0 or 1 so it is not a same-area local exchange. Next the system processes the local exchange number of 555, routing the call to a particular physical local switching office. That office processes the line number of 0101, and makes the connection.
+
+FIGURA
+
+Today the picture is much more complicated. For example, no longer are area codes required to have a middle digit of 0 or 1. This additional complication is possible because instead of switching with physical devices, we now do it in software.
+
+After the definition of Turing machine we gave a formal description of the action of those machines. We next do the same here.
+
+A configuration of a Finite State machine is a pair C = ⟨q, τ ⟩, where q is a state, q ∈ Q , and τ is a (possibly empty) string, τ ∈ Σ∗ . We start a machine with some input string τ0 and say that the initial configuration is C0 = ⟨q0 , τ 0 ⟩.
+
+A Finite State machine acts by a sequence of transitions from one configuration to another. For s ∈ N+ the machine’s configuration after the s -th transition is its configuration at step s , Cs .
+
+Here is the rule for making a transition (we sometimes say it is an allowed or legal transition, for emphasis). Suppose that the machine is in the configuration Cs = ⟨q, τs ⟩ . In the case that τ s is not empty, pop the string’s leading symbol c . That is, where c = τ s [0], take τs+1 = ⟨τs [1], ... τs [k]⟩ for k = |τs | − 1. Then the machine’s next state is q̂ = ∆(q, c) and its next configuration is Cs+1 = ⟨ q̂, τs+1 ⟩. Denote this before-after relationship between configurations by Cs ⊢ Cs+1 .†
+
+The other case is that the string τs is empty. This is the halting configuration Ch . No transitions follow a halting configuration.
+
+At each transition the length of the tape string drops by one so every computation eventually reaches a halting configuration Ch = ⟨q, ε⟩ . A Finite State machine computation is a sequence C0 ⊢ C1 ⊢ C2 ⊢ · · · Ch . We can abbreviate such a sequence with ⊢∗ ,as in C0 ⊢∗ Ch .‡
+
+If the ending state is a final state, q ∈ F , then the machine accepts the input τ 0 , otherwise it rejects τ0 .
+
+Notice that, as with the formalism for Turing machines, the heart of the definitions is the transition function ∆. It makes the machine move step-by-step, from configuration to configuration, in response to the input.
+
+1.12 Example The multiple of three machine of the prior example gives the computation. ⟨q 0 , 5013⟩ ⊢ ⟨q2, 013⟩ ⊢ ⟨q 2 , 13⟩ ⊢ ⟨q 0 , 3⟩ ⊢ ⟨q 0, ε⟩ . Since q 0 is an accepting state, the machine accepts 5013.
+
+1.13 Definition The set of strings accepted by a Finite State machine M is the language of that machine, L(M), or the language recognized, or decided, (or accepted by), the machine.
+
+For Finite State machines, deciding a language is equivalent to recognizing it.‘Recognized’ is more the common term than ‘decided’ here.
+
+1.14 Definition the extended For transition any Finite function State machine ∆ ˆ : Σ∗ with Q gives transition the state function that the ∆ : machine Q × Σ → will Q , end in after starting in the start state and consuming the given string.
+
+† As with Turing machines, read the symbol ⊢ aloud as “yields in one step.” ‡Read this symbol as “yields eventually” or simply “yields.”
+
+Here is an equivalent constructive definition of ∆ˆ. Fix a Finite State machine τ M with Σ∗ , define transition ∆(τ⌢ function t) = ∆(q ∆ i0 : , t) Q × ∆(qi Σ → 1, Q t). To begin, ∆(qi set k, t) ∆(ε)ˆ for any = {q0 t }. Σ. Then Finally, for ∈ ∪ ∪ · · · ∪ ∈ observe that a string σ ∈ Σ∗ is accepted by the machine if ∆(σˆ ) is a final state.
+
+1.15 Example This machine’s extended transition function ∆ˆ
+
+extends its ordinary transition function ∆ in that it repeats the first row of ∆’s table.
+
+∆(ˆa) = q 1
+ ∆(
+ ˆ b) = q 0
+
+(We disregard the difference between ∆’s input characters and ∆ˆ ’s input length one strings.) Here is ∆’s ˆ  effect on the length two strings.
+
+∆(
+ ˆ aa) = q1 ∆(
+ ˆ ab) = q 2 ∆(
+ ˆ ba) = q 1 ∆(
+ ˆ bb) = q 0
+
+This brings us back to determinism because ∆ˆ would not be well-defined without it; ∆ has one next state for all input configurations and so, by induction, for all input strings ∆ˆ has one output ending state.
+
+Finally, note the similarity between ∆ˆ and φ e , the function computed by the Turing machine Pe . Both take as input the contents of their machine’s start tape, and both give as output their machine’s result.
+
+Section
+IV.2
+
+Nondeterminism
+
+Turing machines and Finite State machines both have the property that the next state is completely determined by the current state and current character. Once you lay out an initial tape and push Start then you just walk through the steps like, well . . . , like an automaton. We now consider machines that are nondeterministic, where from any configuration the machine could move to more than one next state, or to just one, or even to no state at all.
+
+Motivation Imagine a grammar with some rules and start symbol. We are given a string and asked if has a derivation. The challenge to these problems is that you sometimes have to guess which path the derivation should take. For instance, if you have S → aS | bA then from S you can do two different things; which one will work?
+
+In the grammar section’s derivation exercises, we expect that an intelligent person have the insight to guess the right way. However, if instead you were writing a program then you might have it try every case; you might do a breadth-first traversal of the tree of all derivations, until you found a success.
+
+The American philosopher and Hall of Fame baseball catcher Y Berra said, “When you come to a fork in the road, take it.” That’s a natural way to attack this problem: when you come up against multiple possibilities, fork a child for each. Thus, the routine might begin with the start state S and for each rule that could apply it spawns a child process, deriving a string one removed from the start. After that, each child finds each rule that could apply to its string and spawns its own children, each of which Yogi Berra now has a string that is two removed from the start. Continue until the 1925–2015 desired string σ appears, if it ever does.
+
+The prototypical example is the celebrated Travelling Salesman problem, that of finding the shortest circuit of every city in a list. Start with a map of the roads in the US lower forty eight states. We want to know if there is a trip that visits each state capital and returns back to where it began in, say, less than 16 000 kilometers. We’ll start at Montpelier, the capital of Vermont. From there, for each potential next capital we could fork a process, making forty seven new processes. The process that is assigned Concord, New Hampshire, for instance, would know that the trip so far is 188 kilometers. In the next round, each child would fork its own child processes, forty six of them. For instance the process that after Montpelier was assigned Concord would have a child assigned to Augusta, Maine and would know that so far the trip is 452 kilometers. At the end, if there is a trip of less than 16 000 kilometers then some process knows it. There will be lots of processes and many of them will have failed to find a short trip, but if even one succeeds then we consider the overall search a success.
+
+This computation is nondeterministic in that while it is happening the machine is simultaneously in many different states. It imagines an unboundedly-parallel machine, where any time you have a job for an additional computing agent, a CPU, you can allocate one.† Think of such a machine as angelic in that whenever it wants more computational
+resources, such as being able to allocate new children, those resources just appear.
+
+This section considers nondeterministic Finite State machines. (Non-deterministic Turing machines appear in the fifth chapter.) We will have two ways to think about nondeterminism, two mental models.‡ The first was introduced above: when such a machine is presented with multiple possible next states then the it forks, so that it is in all of them simultaneously. The next example illustrates.
+
+2.1 Example The Finite State machine below is nondeterministic because leaving q 0 are two arrows labelled 0. It also has states with a deficit of edges; e.g., no 1 arrow leaves q 1 , so if it is in that state and reads that input then it passes to no state at all.
+
+0,1
+q0
+ q 1
+ q2
+ q3
+0
+ 0
+ 1
+
+The animation shows what happens with input 00001. We take the computation history as a tree. For example, on the first 0 the computation splits in two.
+
+Input
+0
+ 0
+ 0
+ 0
+ 1
+q 0
+q0
+ ⊢
+q 0
+ ⊢
+⊢
+ q1
+q0
+ ⊢
+⊢
+ q 1
+ q2
+ q 3
+q0
+ ⊢
+ ⊢
+ ⊢
+⊢
+ q1
+ q 2
+q 0
+ ⊢
+ ⊢
+⊢
+ q1
+ q2
+⊢
+0
+ 1
+ 2
+ 3
+ 4
+ 5
+Step
+2.2 Animation: Steps in the nondeterministic computation.
+
+† This echoes our experience with everyday computers, when we are writing an email in one window and watching a video in another. The machine appears to be in multiple states simultaneously although it may in fact be time-slicing, dovetailing by running each process in succession for a few ticks. ‡ While these models are helpful in learning and thinking about nondeterminism, they are not part of the
+formal definitions and proofs.
+
+When we considered the forking approach to string derivations or to the Travelling Salesman, we observed that if a solution exists then some child process would find it. The same happens here; there is a branch of the computation tree that accepts the input string. There are also branches that are not successful. The one at the bottom dies out after step 2 because when the present state q 2 and the input is 0 this machine passes to no-state.† Another is the branch at the top, which never dies but also does not accept the input. However we don’t care about unsuccessful branches, we only care that there is a successful one. So we will define that a nondeterministic machine accepts an input if there is at least one branch in the computation tree that accepts the input.
+
+The machine in the above example accepts a string if it ends in two 0’s and a 1. When we feed it the input 00001 the problem the machine faces is: when it should stop going around q 0’s loop and start to the right? Our definition has the machine accepting this input so the machine has solved this problem — viewed from the outside we could say, perhaps a bit fancifully, that the machine has correctly guessed. This is our second model for nondeterminism. We will imagine programming by calling a function, some amb(S, R 0 , R1 ... R n−1), and having the computer somehow guess a successful sequence.
+
+Saying that the machine is guessing is jarring. Based on programming classes, a person’s intuition may be that “guessing” is not mechanically accomplishable. We can instead imagine that the machine is furnished with the answer (“go around twice, then off to the right”) and only has to check it. This mental model of nondeterminism is demonic because the furnisher seems to be a supernatural being, a demon, who somehow knows answers that cannot otherwise be found, but you are suspicious and must check that the answer is not a trick.Under this model, a nondeterministic computation accepts the input if there exists a branch of the computation tree that a deterministic machine, if told what branch to take, could verify.
+
+Below we shall describe nondeterminism using both paradigms: as a machine being in multiple states at once, and as a machine guessing. As mentioned above, here we will do that for Finite State machines but in the fifth chapter we will return to it in the context of Turing machines.
+
+Definition A nondeterministic Finite State machine’s next-state function does not output single states, it outputs sets of states.
+
+Definition A nondeterministic Finite State machine M = ⟨Q, qstart, F , Σ, ∆⟩ consists of a finite set of states Q , one of which is the start state q start, a subset F ⊆ Q of accepting states or final states, a finite input alphabet set Σ, and a next-state function ∆ : Q × Σ → P (Q).
+
+We will use these machines in three ways. First, with them we encounter nondeterminism, which is critical for the book’s final part. Second, they are useful in practice; both below and in the exercises are examples of jobs that are more easily solved in this way. Finally, we will use them to prove Kleene’s Theorem, Theorem 3.10.
+
+†  No-state cannot be an accepting state, since it isn’t a state at all.
+
+2.4 Example This is Example 2.1’s nondeterministic Finite State machine, along with its transition function.
+
+∆
+ 0
+ 1
+0,1
+ q 0
+ {q0 , q 1 }
+ {q0 }
+q0
+ q 1
+ q2
+ q 3
+ q 1
+ {q 2 }
+ {}
+0
+ 0
+ 1
+ q 2
+ {}
+ {q3 }
++ q 3
+ {}
+ {}
+ 
+In this nondeterministic machine the entries of the array are not states, they are sets of states.
+
+Nondeterministic machines may seem conceptually fuzzy so the formalities are a help. Contrast these definitions with the ones for deterministic machines.
+
+A configuration is a pair C = ⟨q, τ ⟩, where q ∈ Q and τ ∈ Σ∗ . A machine starts with an initial configuration C0 = ⟨q 0 , τ0⟩ . The string τ0 is the input.
+
+Following the initial configuration there may be one or more sequences of transitions. + Suppose that there is a machine configuration Cs = ⟨q, τs ⟩ . For s ∈ N , in the case where τs is not the empty string, a transition pops the string’s leading symbol c to get τ s+1 , takes the machine’s next state to be a member q̂ of the set ∆(q, c) and then takes a subsequent configuration to be Cs+1 = ⟨ q̂, τs+1 ⟩ . Denote that two configurations are connected by a transition with C s ⊢ Cs+1 .
+
+The other case is that τs is the empty string. This is a halting configuration, Ch . After Ch , no transitions follow.
+
+A nondeterministic Finite State machine computation is a sequence of transitions that ends in a halting configuration, C0 = ⟨q 0 , τ0 ⟩ ⊢ C1 ⊢ C2 ⊢ · · · Ch = ⟨q, ε⟩. From an initial configuration there may be many such sequences. If at least one ends with a halting state, with q ∈ F , then the machine accepts the input τ0 , otherwise it rejects τ0 .
+
+2.5 Example For the nondeterminstic machine of Example 2.1, the graphic shows this allowed sequence of transitions.
+
+2.6⟨q0, 00001⟩ ⊢ ⟨q0 , 0001⟩ ⊢ ⟨q 0, 001⟩ ⊢ ⟨q 1, 01⟩ ⊢ ⟨q 2 , 1⟩ ⊢ ⟨q3 , ε⟩ 
+
+Because it ends in an accepting state, the machine accepts the initial string, 00001.
+
+Definition For a nondeterministic Finite State machine M, the set of accepted strings is the language of the machine L(M), or the language recognized, (or accepted), by that machine.†
+
+†  Below we will define something called ε transitions that make ‘recognized’ the right idea here, instead of ‘decided’.
+
+We will also adapt the definition of the extended transition function ∆ ˆ : Σ∗ → Q .
+∆(ε)
+ Fix ˆ
+ a = nondeterministic 0 Where ∆(τ
+ M ˆ with = transition 0
+ , q i1
+ , ...function qi k
+ for ∆ τ : Q Σ∗ × Σ , define → Q . ∆(τ
+ ˆ Start ⌢ t) with
+ =
+{q }. ) {qi } ∈∆(q i0 , t) ∪ ∆(qi 1 , t) ∪ · · · ∪ ∆(q ik , t) for any t ∈ Σ. Then the machine accepts
+σ ∈ Σ∗ if and only if any element of ∆(σ
+ ˆ ) is a final state.
+
+
+2.7 Example The language recognized by this nondeterministic machine
+
+a,b
+ q 0
+ a
+ q1
+b
+ a
+q 2
+ q3
+ a,b
+b
+
+is the set of strings containing the substring aa or bb. For instance, the machine accepts abaaba because there is a sequence of allowed transitions ending in an accepting state, namely this one.
+
+⟨q 0 , abaaba⟩ ⊢ ⟨q 0 , baaba⟩ ⊢ ⟨q 0 , aaba⟩ ⊢ ⟨q1 , aba⟩ ⊢ ⟨q2 , ba⟩ ⊢ ⟨q 2 , a⟩ ⊢ ⟨q 2 , ε⟩
+
+2.8 Example With Σ = { a, b, c } , this nondeterministic machine
+
+c
+q0
+ q 1
+a
+
+recognizes the language { (ac)n n ∈ N } = {ε, ac , acac, ... } . The symbol b isn’t attached to any arrow so it won’t play a part in any accepting string.
+
+Often a nondeterministic Finite State machines is easier to write than a deterministic machine that does the same job.
+
+2.9 Example This nondeterministic machine that accepts any string whose next to last character is a
+
+a,b
+ q 0
+ a
+ q1
+ a,b
+ q 2
+
+is simpler than the deterministic machine.
+
+b
+ a,b
+b
+ q0
+ q1
+ q2
+a
+ a
+b
+
+2.10 Example This machine accepts {σ ∈ B∗ σ = 0 ⌢τ ⌢ 1 where τ ∈ B∗ }.
+
+0,1
+q0
+ q 1
+ q2
+0
+ 1
+
+2.11 Example This is a garage door opener listener that waits to hear the remote control send the signal 0101110. That is, it recognizes the language {σ ⌢ 0101110 σ ∈ B∗ }.
+
+0,1
+ q 0
+ q1
+ q 2
+ q3
+ q 4
+ q5
+ q6
+ q7
+0
+ 1
+ 0
+ 1
+ 1
+ 1
+ 0
+
+2.12 Remark Having seen a couple of examples we pause to again acknowledge, as we did when we discussed the angel and the demon, that something about nondeterminism is unsettling. If we feed τ = 010101110 to the prior example’s listener then it accepts.
+
+⟨q0, 010101110⟩ ⊢ ⟨q 0 , 10101110⟩ ⊢ ⟨q 0 , 0101110⟩ ⊢ ⟨q 1 , 101110⟩
+⊢ ⟨q2 , 01110⟩ ⊢ ⟨q 3 , 1110⟩ ⊢ ⟨q4, 110⟩ ⊢ ⟨q5, 10⟩ ⊢ ⟨q 6 , 0⟩ ⊢ ⟨q 7 , ε⟩
+
+But the machine’s chain of states is set up for a string, 0101110, that begins with two sets of 01’s, while τ begins with three. How can it guess that it should ignore the first 01 but act on the second? Of course, in mathematics we can consider whatever we can define precisely. However we have so far studied what can be done by devices that are in principle physically realizable so this may seem to be a
+shift.
+
+However, we will next show how to convert any nondeterministic Finite State machine into deterministic one that does the same job. So we can think of a nondeterministic Finite State machine as an abbreviation, a convenience. This obviates at least some of the paradox of guessing, at least for Finite State machines.
+
+ε transitions Another extension, beyond nondeterminism, is to allow ε transitions, or ε moves. We alter the definition of a nondeterministic Finite State machine, Definition 2.3, so that instead of ∆ : Q × Σ → P (Q), the transition function’s signature is ∆ : Q × (Σ ∪ {ε }) → P (Q).† The associated behavior is that the machine can transition spontaneously, without consuming any input.‡
+
+2.13 Example This machine recognizes valid integer representations. Note the ε between q 0 and q1 .
+
+q 0
+ q1
+ q2
+ 0,...9
++,-,ε
+ 1,...,9
+
+Because of the ε it can accept strings that do not start with a + or - sign. For instance, with input 123 the machine can begin by following the ε transition to state q 1 , then read the 1 and transition to q 2 , and stay there while processing the 2 and 3. This is a branch of the computation tree accepting the input, and so the string 123 is in the machine’s language.
+
+† Assume ε < Σ ‡ Or, think of it as transitioning on consuming the empty string ε .
+
+2.14 Example A machine may follow two or more ε transitions. From q0 this machine may stay in that state, or transition to q 2 , or q 3, or q5 , all without consuming any input.
+
+q3
+ c
+ q 4
+ε
+ε
+q0
+ a
+ q1
+ b
+ q 2
+ε
+q5
+ q 6
+d
+
+That is, the language of this machine is the four element set L = { abc, abd, ac, ad }.
+
+We can give a precise definition of the action of a nondeterministic Finite State machine with ε transitions.
+
+First we define the collection of states reachable by ε moves from a given state. For that we use E : Q × N → P (Q) where E(q, i) is the set of states reachable from q within at most i -many ε transitions. That is, set E(q, 0) = {q } and where E(q, i) = {qi0 , ... qi k }, set E(q, i + 1) = E(q, i) ∪ ∆(qi 0 , ε) ∪ · · · ∪ ∆(q ik , ε). Observe that these are nested, E(q, 0) ⊆ E(q, 1) ⊆ · · · and that each is a subset of Q .
+
+But of sets Q has stops only growing, finitely E(q, many i states = E(q, so i ˆ there + must = be . Define an ˆ i ∈ the N where ε closure the sequence function Ê : Q P by Ê(q) = E(q, ˆ) ˆ i 1) · · ·→ (Q) ).
+
+With that, we are ready to describe the machine’s action. As before, a
+configuration is a pair C = ⟨q, τ ⟩, where q ∈ Q and τ ∈ Σ∗ . A machine starts with some initial configuration C0 = ⟨q0 , τ 0 ⟩, where the string τ 0 . is the input.
+
+The key description is that of a transition. Consider a configuration Cs = ⟨q, τ s ⟩ for s ∈ N and suppose that τ s is not the empty string. We will describe a configuration Cs+1 = ⟨ q̂, τs+1 ⟩ that is related to the given one by Cs ⊢ Cs+1 . (As with the earlier description of nondeterministic machines without ε transitions, there may be more than one configuration related in this way to C s .)
+
+The string is easy; just pop the leading character to get τ s = t ⌢ τs+1 where t ∈ Σ . To get a legal state q̂ : (i) find the ε closure Ê(q) = {qs 0 , ... q sk } , (ii) let q̄ be an element of the set ∆(q s0 , t) ∪ ∆(qs1 , t) ∪ · · · ∪ ∆(q sk , t), and (iii) take q̂ to be an element of the ε closure Ê( q̄).
+
+If τs is the empty string then this is a halting configuration, C h . No transitions follow Ch .
+
+A nondeterministic Finite State machine computation is a sequence of transitions ending in a halting configuration, C0 = ⟨q0, τ 0 ⟩ ⊢ C1 ⊢ C2 ⊢ · · · C h = ⟨q, ε⟩ . From a given C0 there may be many such sequences. If at least one ends with a halting state, having q ∈ F , then the machine accepts the input τ0 , otherwise it rejects τ 0 .
+
+With that, we will modify the definition of the extended transition function ∆
+ ˆ : Σ∗ → Q from section 2. Begin by defining ∆(ε)
+ ˆ
+ = Ê(q0 ). Then the rule for going from a string to its extension is that for τ ∈ Σ∗ and where
+
+∆(τ
+ ˆ ) = {qi 0
+ , q i1
+ , ... qi k
+ }.
+∆(τ
+ ˆ ⌢ t) = Ê(∆(q i0
+ , t)) ∪ · · · ∪ Ê(∆(q ik
+ , t))
+ for t ∈ Σ
+
+Observe that this nondeterministic machine with ε transitions accepts a string σ ∈ Σ∗ if any one of the states in ∆(σ ˆ ) is a final state.
+
+Remark Certainly these are an intricate set of definitions, but they are here to demonstrate something. In the examples and the homework we often use informal terms such as “guess” and “demon.” However, don’t take this use evocative and informal language for an inability to follow mathematical orthodoxy. We can perfectly well give definitions and results with full precision.
+
+Example For the machine of Example 2.14, this sequence shows that it accepts abc
+
+2.17⟨q0, abc⟩ ⊢ ⟨q1, bc⟩ ⊢ ⟨q 2 , c⟩ ⊢ ⟨q 3 , c⟩ ⊢ ⟨q4 , ε⟩
+
+(note the ε transition between q 2 and q 3 ). This sequence shows it also accepts the input string d.
+
+⟨q 0, d⟩ ⊢ ⟨q 5 , d⟩ ⊢ ⟨q 6 , ε⟩
+
+As with nondeterminstic machines, one reason that we use ε transitions is that they can make solving a complex job much easier.
+
+Example An ε transition can put two machines together with a parallel connection. This shows a machine whose states are named with q ’s combined with one whose states are named with r ’s.
+
+a,b
+q0
+ a
+ q1
+ b
+ q 2
+ε
+s0
+c
+ε
+r0
+ r 1
+a
+
+The top nondeterministic machine’s language is {σ n ∈ Σ∗ σ ends in ab } and the bottom machine’s language is {σ ∈ Σ∗ σ = (ac) for some n ∈ N } , where Σ = { a, b, c }. The language for the entire machine is the union. {σ ∈ Σ∗ either σ ends in ab or σ = (ac) n for n ∈ N }
+
+Example An ε transition can also make a serial connection between machines. The machine on the left below recognizes the language { (aab)m m ∈ N } and the machine on the right recognizes { (a|aba)n n ∈ N }.
+
+q2
+ a
+ q1
+ q4
+ q5
+b
+a
+ a
+b
+ a
+q 0
+ q 3
+a
+
+If we insert an ε bridge from each of the left side’s final states (in this example there happens to be only one such state) to the right side’s initial state
+
+q2
+ a
+ q1
+ q4
+ q5
+b
+a
+ a
+b
+ a
+q 0
+ ε
+ q 3
+
+then the combined machine accepts strings in the concatenation of those languages.
+
+L(M) = {σ ∈ { a, b }∗ σ = (aab)m (a| aba)n for m, n ∈ N }
+
+For example, it accepts aabaababa and aabaabaaa.
+
+Example An ε transition edge can also produce the Kleene star of a a nondeterministic machine. For instance, without the ε edge this machine’s language is {ε, ab }, while with it the language is { (ab)n n ∈ N }.
+
+ε
+q0
+ a
+ q1
+ b
+ q2
+
+Equivalence of the machine types We next prove that nondeterminism does not change what we can do with Finite State machines.
+
+2.20 Theorem The class of languages recognized by nondeterministic Finite State machines equals the class of languages recognized by deterministic Finite State machines. This remains true if we allow the nondeterministic machines to have ε transitions.
+
+We can show that the two classes are equal by showing that they are subsets of each other. One direction is easy; any deterministic machine is, basically, a nondeterministic machine. That is, in a deterministic machine the next-state function outputs single states and to make it a nondeterministic machine just convert those states into singleton sets. Thus the set of languages recognized by deterministic machines is a subset of the set recognized by  nondeterministic machines.
+
+We will demonstrate inclusion in the other direction constructively. We will show how to start with a nondeterministic machine with ε transitions and construct a deterministic machine that recognizes the same language. We won’t give a complete proof (although certainly one is possible) simply because a proof is messy and the examples below are entirely convincing.
+
+Example Consider this nondeterministic machine, MN , with no ε transitions.
+a
+q0
+ a
+ q1
+ b
+ q2
+
+What differentiates a nondeterministic machine is that it can be in multiple states at once. So for the associated deterministic machine M D , each line of the transition function’s table below is a set si = {qi 1 , ... qi k } of M N ’s states.
+
+As an illustration of constructing the table, suppose that the above machine is in s 5 = {q0, q2 } and is reading a. Combine the next states due to q 0 , the set ∆ N (q 0 , a) = {q 0 , q 1 }, with the next states due to q 2 , the set ∆N (q 2, a) = { } . The union of those two sets gives ∆ D (s 5, a) = {q0 , q1 }, which below is the state s4 .
+
+∆ D
+ a
+ b
+s0 = { }
+ s 0
+ s 0
++ s1 = {q 0 }
+ s 4
+ s 0
+s2 = {q 1 }
+ s 0
+ s 3
++ s3 = {q 2 }
+ s 0
+ s 0
++ s4 = {q 0, q 1 }
+ s 4
+ s 3
++ s5 = {q 0, q 2 }
+ s 4
+ s 0
++ s6 = {q 1, q 2 }
+ s 0
+ s 3
++ s7 = {q 0 , q 1, q 2 }
+ s 4
+ s 3
+
+The start state of MD is s 1 = {q0 }. A state of the deterministic machine MD is accepting if any of its element q ’s are accepting states in M N .
+
+In general, compute the transition function of the deterministic machine with ∆ D (s i , x) = ∆ N (qi 0 , x) ∪ · · · ∪ ∆N (qi k , x), where si = {q i0 , ... qi k } and x ∈ Σ. An example is ∆D (s5 , a) = ∆ N (q0, a) ∪ ∆ N (q 2 , a), which equals {q 0 , q 1 } ∪ { } = {q0, q1 } = s 4 .
+
+Besides the notational convenience, naming the sets of states as si ’s makes clear that M D is a deterministic Finite State machine. So does its transition graph.
+
+b
+a,b
+ s 0
+b
+a
+ s1
+a,b
+a
+ s 6
+ a
+ s5
+b
+ a
+s 2
+ b
+ s 3
+ b
+ s4
+ a
+s7
+a
+b
+
+If the nondeterministic machine has k -many states then under this construction the deterministic machine has 2k -many states. Typically many of them can be eliminated. For instance, in the above machine the state s6 is clearly unreachable since there are no arrows into it. The next section covers minimizing the number of states in a machine.
+
+We next expand that construction to cover ε transitions. Basically, we follow those transitions. For example, the start state of the deterministic machine is the ε closure of {q0 }, the set of the states of MN that are reachable by a sequence of ε transitions from q 0. In addition, suppose that we have a nondeterministic machine and we are constructing the associated deterministic machine’s next-state function ∆ D , that the current configuration is si = {q i1 , qi 2 , ... } and that the machine is reading a. If there is a ε transition from q i j to some q then to the set of next states add ∆N ({q }, a), and in fact add the entire ε closure.
+
+2.22 Example Consider this nondeterministic machine.
+
+ε
+q 0
+ q1
+b
+a
+ b
+ ε
+q 2
+ q3
+ a
+
+To find the set of next states, follow the ε transitions. For instance, suppose that this machine is in q 0 and the next tape character is a. The arrow on the left takes the machine from q 0 to q 2 . Alternatively, following the ε transition from q 0 to q 3 and then reading the a gives q3 . So the machine is next in the two states q 0 and q 3 .
+
+These are the ε closures.
+state q
+ q 0
+ q 1
+ q 2
+ q 3
+ε closure Ê(q)
+ {q0, q3 }
+ {q0 , q1 }
+ {q 2 }
+ {q 3 }
+
+The full deterministic machine is on the next page. The start state is the ε closure of {q 0 } , the state s 7 = {q0 , q 3 } . A state is accepting if it contains any element of the ε closure of q1 .
+
+In general, for a state s and tape character x , to compute ∆ D (s, x): (i) find the ε closure of all of the q ’s in the state s , giving ∪q ∈s Ê(q) = {qi 0 , ... q ik }, then (ii) take the union of the next states of the q i j to get T = ∆ N (qi0 , x)∪...∪∆ N (qi 0 , x) and finally (iii) find the ε closure of each element of T , and take the union of all those, ∪t ∈T Ê(t).
+
+As an example take s = s5 = {q0 , q1 } and x = a. Then (i) gives {q 0 , q 3 } ∪ {q0, q1 } = {q 0 , q 1 , q 3 }. The next states for (ii) are ∆N (q 0 , a) = {q2 , q3 } , ∆ N (q1 , a) = {q 2 , q 3 } , and ∆N (q 3 , a) = {q 3 }, so T = {q 2, q3 }. Finally, for (iii) the union of the ε closures gives {q 2 } ∪ {q 3 } = {q 2, q 3 } = s10.
+
+∆D
+ a
+ b
+s0 = { }
+ s0
+ s0
++ s 1 = {q0 }
+ s 10
+ s2
++ s 2 = {q1 }
+ s 10
+ s2
+s 3 = {q2 }
+ s0
+ s7
+s 4 = {q3 }
+ s4
+ s0
++ s 5 = {q0, q1 }
+ s 10
+ s 12
++ s 6 = {q0, q2 }
+ s 10
+ s 12
++ s 7 = {q0, q3 }
+ s 10
+ s 12
++ s 8 = {q1, q2 }
+ s 10
+ s 12
++ s 9 = {q1, q3 }
+ s 10
+ s2
+s 10 = {q2, q3 }
+ s4
+ s7
++ s 11 = {q0, q1, q2 }
+ s 10
+ s 12
++ s 12 = {q0, q1, q3 }
+ s 10
+ s 12
++ s 13 = {q0, q2, q3 }
+ s 10
+ s 12
++ s 14 = {q1, q2, q3 }
+ s 10
+ s 12
++ s 15 = {q0, q1, q2, q3 }
+ s 10
+ s 12
+
+Section
+
+IV.3Regular expressions
+
+In 1951, S Kleene† was studying a mathematical model of neurons. These are like Finite State machines in that they do not have scratch memory. He noted patterns to the languages that are recognized by such devices.
+
+For instance, this Finite State machine
+
+q0
+ q1
+ q 2
+b
+ b
+a
+ a
+ a,b
+
+accepts strings that have some number of a’s, followed by one b, followed by some more a’s and one b, and then followed by more characters. Kleene introduced a convenient way, called regular expressions, to denote constructs such as “any number of” and “followed by.” He gave the definition in the first subsection below, and supported it with the theorem in the second subsection.
+
+† Pronounced KLAY-nee. He was a student of Church.
+
+Definition A regular expression is a string that describes a language. We will introduce these with a few examples. These use the alphabet Σ = { a, ... z }.
+
+Example The string h(a|e|i|o|u)t is a regular expression describing strings that start with h, have a vowel in the middle, and end with t. That is, this regular expression describes the language consisting of five words of three letters each, L = { hat, het, hit, hot, hut } .
+
+The pipe ‘|’ operator, which is a kind of ‘or’, and the parentheses, which provide grouping, are not part of the strings being described; they are metacharacters.
+
+Besides the pipe operator and parentheses, the regular expression also uses concatenation since the initial h is concatenated with (a|e|i|o|u), which in turn is concatenated with t.
+
+Example The regular expression ab*c describes the language whose words begin with an a, followed by any number of b’s (including possibly zero-many b’s), and ending with a c. So ‘∗’ means ‘repeat the prior thing any number of times’. This regular expression describes the language L = { ac , abc , abbc, ... } .
+
+Example There is an interaction between pipe and star. Consider the the regular expression (b|c)*. It could mean either ‘any number of repetitions of picking a b or c’ or ‘pick a b or c and repeat that character any number of times’.
+
+The definition has it mean the first. Thus the language described by a(b|c)* consists of words starting with a and ending with any mixture of b’s and c’s, so that L = { a, ab, ac, abb, abc, acb, acc, ... }.
+
+In contrast, to describe the language whose members begin with a and end with any number of b’s or any number of c’s, L̂ = { a, ab, abb , ... , ac, acc, ... }, use the regular expression a(b*|c*).
+
+That is, the rules for operator precedence are: star binds most tightly, then concatentation, then the pipe alternation operator, |. To get another order, use parentheses.
+
+Definition Let Σ be an alphabet not containing any of the metacharacters ), (,|, or *. A regular expression over Σ is a string that can be derived from this grammar
+
+⟨regex ⟩ → ⟨concat⟩
+| ⟨regex⟩ ‘|’ ⟨concat⟩
+⟨concat⟩ → ⟨simple⟩
+| ⟨concat⟩ ⟨simple⟩
+⟨simple⟩ → ⟨char⟩
+| ⟨simple⟩ *
+| ( ⟨regex⟩ )
+⟨char⟩ →  | ε | x 0 | x 1 | . . .
+
+where the xi characters are members of the alphabet Σ .†
+
+As to their semantics, what regular expressions mean, we will define that recursively. We start with the bottom line, the single-character regular expressions, and give the language that each describes. We will then do the forms on the other lines, for each interpreting it as the description of a language.
+
+The language described by the single-character regular expression  is the empty set, L() = . The language described by the regular expression consisting of only the character ε is the one-element language consisting of only the empty string, L(ε) = {ε } . If the regular expression consists of just one character from the alphabet Σ then the language that it describes contains only one string and that string has only that single character, as in L(a) = { a }.
+
+We finish by defining the semantics of the operations. Start with regular expressions R 0 and R 1 describing languages L(R 0 ) and L(R 1 ). Then the pipe symbol describes the union of the languages, so that L(R0 |R 1 ) = L(R 0 ) ∪ L(R 1 ). Concatenation of the regular expressions describes concatenation of the languages, L(R 0 ⌢ R 1 ) = L(R 0)⌢L(R 1 ). And, the Kleene star of the regular expression describes the star of the language, L(R 0 ∗) = L(R 0 )∗ .
+
+3.5 Example Consider the regular expression aba* over Σ = { a, b }. It is the concatenation of a, b, and a*. The first describes the single-element language L(a) = { a } . Likewise, the second describes L(b) = { b }. Thus, the string ab describes the concatenation of the two, another one-element language.
+
+L(ab) = L(a) ⌢ L(b) = {σ ∈ Σ∗ σ = σ 0 ⌢σ 1 where σ 0 ∈ L(a) and σ 1 ∈ L(b) } = { ab }
+
+The regular expression a* describes the star of the language L(a), namely L(a*) = { an n ∈ N }. Concatenating it with L(ab) gives this.
+
+L(aba*) = {σ ∈ Σ∗ σ = σ0 ⌢ σ1 where σ0 ∈ L(ab) and σ 1 ∈ L(a*) }
+= { ab, aba, abaa, aba3 , ... } = { aba n n ∈ N }
+
+We finish this subsection with some constructs that appear often. These examples use Σ = { a, b, c }.
+
+3.6 Example Describe the language consisting of strings of a’s whose length is a multiple of three, L = {a3k k ∈ N } = {ε, aaa, aaaaaa, ... } , with the regular expression (aaa)*.
+
+Note that the empty string is a member of that language. A common gotcha is to forget that star is for any number of repetitions, including zero-many.
+
+† As we have done with other grammars, here we use the pipe symbol | as a metacharacter, to collapse rules with the same left side. But pipe also appears in regular expressions. For that usage we wrap it in single quotes, as ‘|’.
+
+3.7 Example To match any character we can list them all. The language consisting of three-letter words ending in bc is { abc , bbc, cbc }. The regular expression (a|b|c)bc describes it. (In practice the alphabet can be very large so that listing all of the characters is impractical; see Extra A.)
+
+Example The regular expression a*(ε |b) describes the language of strings that have any number of a’s and optionally end in one b, L = {ε, b, a, ab, aa, aab , ... } . Similarly, to describe the language consisting of words with between three and five a’s, L = { aaa, aaaa, aaaaa } we can use aaa(ε |a|aa).
+
+Example The language { b , bc, bcc, ab, abc, abcc, aab, ... } has words starting with any number of a’s (including zero-many a’s), followed by a single b, and then ending in fewer than three c’s. To describe it we can use a*b(ε |c|cc).
+
+Kleene’s Theorem The next result justifies our study of regular expressions because it shows that they describe the languages of interest.
+
+3.10 Theorem (Kleene’s theorem) A language is recognized by a Finite State machine if and only if that language is described by a regular expression.
+
+We will prove this in separate halves. The proofs use nondeterministic machines but since we can convert those to deterministic machines, the result holds there also.
+
+3.11 Lemma If a language is described by a regular expression then there is a Finite State machine that recognizes that language.
+
+Proof We will show that for any regular expression R there is a machine that accepts strings matching that expression. We use induction on the structure of regular expressions.
+
+Start with regular expressions consisting of a single character. If R =  then L(R) = { } and the machine on the left below recognizes L(R). If R = ε then L(R) = {ε } and the machine in the middle recognizes this language. If the regular expression is a character from the alphabet, such as R = a, then the machine on the right works.
+
+q 0
+ q 0
+ q0
+ a
+ q2
+
+We finish by handling the three operations. Let R0 and R 1 be regular expressions; the inductive hypothesis gives a machine M0 whose language is described by R 0 and a machine M1 whose language is described by R 1.
+
+First consider alternation, R = R 0 | R 1. Create the machine recognizing the language described by R by joining those two machines in parallel: introduce a new state s and use ε transitions to connect s to the start states of M0 and M1 . See Example 2.17.
+
+Next consider concatenation, R = R 0 ⌢ R1 . Join the two machines serially: for each accepting state in M0 , make an ε transition to the start state of M1 and then convert all those accepting states of M0 to be non-accepting states. See Example 2.18.
+
+Finally consider Kleene star, R = (R 0 )*. For each accepting state in the machine M0 that is not the start state make an ε transition to the start state, and then make the start state an accepting state. See Example 2.19.
+
+3.12 Example Building a machine for the regular expression ab(c|d)(ef)* starts with machines for the single characters.
+
+q0
+ a
+ q 1
+ q0
+ a
+ q 1
+ ...
+ q 10
+ f
+ q 11
+
+Put these atomic components together
+
+q 4
+ c
+ q5
+ε
+ ε
+q0
+ a
+ q1
+ ε
+ q2
+ b
+ q 3
+ q12
+ ε
+ q 8
+ e
+ q9
+ ε
+ q 10
+ f
+ q11
+q 6
+ d
+ q7
+
+to get the complete machine.
+
+q4
+ c
+ q 5
+ ε
+ε
+ ε
+q0
+ a
+ q1
+ ε
+ q2
+ b
+ q3
+ ε
+ q12
+ q8
+ e
+ q9
+ ε
+ q10
+ f
+ q 11
+ε
+ ε
+q6
+ d
+ q 7
+
+This machine is nondeterministic. For a deterministic one use the conversion process that we saw in the prior section.
+
+3.13 Lemma Any language recognized by a Finite State machine is described by a regular expression.
+
+Our strategy starts with a Finite State machine and eliminates its states one at a time. Below is an illustration, before and after pictures of part of a larger machine, where we eliminate the state q.
+
+qi
+ a
+ q
+ b
+ q o
+ q i
+ ab
+ qo
+
+In the after picture the edge is labelled ab, with more than just one character. For the proof we will generalize transition graphs to allow edge labels that are regular expressions. We will eliminate states , keeping the recognized language the same. We will be done when there remain only two states, with one edge between them. That edge’s label is the desired regular expression.
+
+Before the proof, an example. Consider the machine on the left below. Section 3. Regular expressions
+
+b
+b
+201
+q 0
+a
+q1
+d
+c
+q2
+q1
+a
+ c
+e
+ ε
+ q 0
+ d
+ q2
+ ε
+ f
+
+The proof starts as above on the right by introducing a new start state guaranteed to have no incoming edges, e , and a new final state guaranteed to be unique, f . Then the proof eliminates q1 as below.
+
+e
+ ε
+ q0
+ d|(ab*c)
+ q2
+ ε
+ f
+
+Clearly this machine recognizes the same language as the starting machine.
+
+Proof Call the machine M. If it has no accepting states then the regular expression is  and we are done. Otherwise, we will transform M to a new machine, M̂, with the same language, on which we can execute the state-elimination strategy.
+
+First we arrange that M̂ has a single accepting state. Create a new state f and for each of M’s accepting states make a ε transition to f (by the prior paragraph there is at least one such accepting state). Change all the accepting states to non-accepting ones and then make f accepting.
+
+Next introduce a new start state, e . Make a ε transition between it and q0 , (Ensuring that M̂ has at least two states allows us to handle machines of all sizes uniformily.)
+
+Because the edge labels are regular expressions, we can arrange that from any q i to any q j is at most one edge, because if M has more than one edge then in M̂ use the pipe, |, to combine the labels, as here.
+
+q i
+ a
+ qj
+b
+q i
+a|b
+qj
+
+Do the same with loops, that is, cases where i = j . Like the prior transformations, clearly this does not change the language of accepted strings.
+
+The last part of transforming to M̂ is to drop any useless states. If a state node other than f has no outgoing edges then drop it along with the edges into it. The language of the machine will not change because this state cannot lead to an accepting state, since it doesn’t lead anywhere, and this state is not itself accepting as only f is accepting.
+
+Along the same lines, if a state node q is not reachable from the start e then can drop that node along with its incoming and outgoing edges. (The idea of unreachable is clear but for a formal definition see Exercise 3.31.)
+
+With that, M̂ is ready for state elimination. Below are before and after pictures. The before picture shows a state q to be eliminated. There are states qi 0 , . . . qi j with an edge leading into q , and states qo0 , . . . q ok that receive an edge leading out of q . (By the setup work above, q has at least one incoming and at least one outgoing edge.) In addition, q may have a loop.
+
+qi 0
+..
+.
+Ri0 , o
+ 0
+Ri 0, o
+ k
+Ri
+ 0
+R l
+q
+Ro0
+qo0
+..
+.
+qi 0
+..
+.
+Ri0, o0
+ |(Ri0
+ R l * R o 0 )
+0 , ok
+ 0
+ R l * R o k
+ )
+ qo0
+Ri |(Ri..
+.
+qij
+Ri
+j
+Ri j , o
+ 0
+Ri j , o
+ k
+Ro
+k
+qok
+qij
+Rij , o 0
+ |(Rij
+ R l *Ro0 )
+Rij , ok
+ |(Rij
+ R l *Rok
+ )
+qok
+
+(Here is a subtle point: possibly some of the states shown on the left of each of the two pictures equal some shown on the right. For example, possibly q i0 equals q o 0 . If so then the shown edge Ri 0,o0 is a loop.)
+
+Eliminate q and the associated edges by making the replacements shown in the after picture. Observe that the set of strings taking the machine from any incoming state q i to any outgoing state qo is unchanged. So the language recognized by the machine is unchanged.
+
+Repeat this elimination until all that remains are e and f , and the edge between them. (The machine has finitely many states so this procedure must eventually stop.) The desired regular expression is edge’s label.
+
+3.14ExampleConsider M on the left. Introduce e and f to get M̂ on the right.
+
+b
+b
+q2
+q2
+b
+ a
+b
+ a
+b
+b
+e
+ ε
+ q 0
+ q 1
+ ε
+ f
+q 0
+ q 1
+a
+a
+ε
+
+Start by eliminating q 2 . In the terms of the proof’s key step, q 1 = q i0 and q0 = q o 0 . The regular expressions are Ri 0 = a, Ro0 = b, R i 0,o0 = b, and R l = b. That gives this machine.
+
+b|(ab*b)
+e
+ ε
+ q0
+ q1
+ ε
+ f
+a
+ε
+
+Next eliminate q1 . There is one incoming node q 0 = q i0 and two outgoing nodes q0 = qo 0 and f = qo1 . (Note that q 0 is both an incoming and outgoing node; this is the subtle point mentioned in the proof.) The regular expressions are R i0 = a, R o 0 = b|(ab*b), and R o 1 = ε .
+
+ε |a(b|ab*b)
+e
+ ε
+ q0
+ ε |aε
+ f
+
+All that remains is to eliminate q 0 . The sole incoming node is e = q i0 and the sole outgoing node is f = q o 0 , and so R i0 = ε , Ro 0 = ε |aε , and R l = ε |a(b |ab ∗ b).
+
+e
+ )
+ f
+ε (ε |(a(b|ab*b)))*(ε |aε
+
+This regular expression simplifies. For instance, aε =a.
+
+Section
+IV.4Regular languages
+
+Definition Finite State machines give us insight into what a machine can do without scratch memory. We can quantify how powerful these machines are by determining the set of jobs that they can and cannot do.
+
+4.1Definition A regular language is one that is recognized by some Finite State machine or, equivalently, described by a regular expression.
+
+4.2 Lemma The number of regular languages over a Σ is countably infinite. The collection of languages over Σ is uncountable, so there are languages that are not regular.
+
+Proof Recall that alphabets are, as defined in Appendix A, nonempty and finite. Then there are infinitely many regular languages over Σ, because every finite language is regular — just list all the cases as in Example 1.8 — and there are infinitely many finite languages.
+
+We next argue that the number of regular languages is countable by arguing that the number of regular expressions over B is countable. Clearly there are finitely many regular expressions of length 1, of length 2, etc. The union of those is a countable union of countable sets, and so is countable.
+
+We finish by showing that the set of languages over Σ, the set of all L ⊆ Σ∗ , is uncountable. The set Σ ∗ is countably infinite by the argument of the prior two paragraphs. The set of all L ⊆ Σ∗ is the power set of Σ∗, and so has cardinality greater than the cardinality of Σ∗ , which makes it uncountable.
+
+(In practice the suggestion in the first paragraph to list all the cases may not be reasonable. For example, there are finitely many people and each has finitely many active phone numbers so the set of all currently-active phone numbers is a regular language. But, constructing a Finite State machine for it is silly.† )
+
+Closure properties We’ve seen that if two languages are regular then their union is regular, and their concatenation is regular also. A structure is closed under an operation if performing that operation on its members always yields another member.
+
+† A finite regular language doesn’t have to be large for it to be difficult, in a sense. Take Goldbach’s conjecture, that every even number greater than 2 is the sum of two primes, as in 4 = 2 + 2, 6 = 3 + 3, 8 = 3 + 5, . . . Computer testing shows that this pattern continues to hold up to very large numbers but no one knows if it is true for all evens. Now consider the set consisting of the string σ ∈ { 0 , ... 9 }∗ representing the smallest even number that is not the sum of two primes. This set is finite since it has either one member or none. But while that set is tiny, we don’t know what it contains.
+
+4.3Lemma The collection of regular languages is closed under union, concatenation, and Kleene star.
+
+Proof In proving Lemma 3.11, the first half of Kleene’s Theorem, we did the regular expression operations of pipe, concatenation, and Kleene star. Those correspond to the set operations of union, concatenation, and Kleene star on the languages. Briefly, where R 0 is a regular expression describing the language L0 R and 0R 1 R describes 1 describes the L1 concatenation then the regular L0 ⌢ L1, expression and R0 *R describes 0 | R 1 describes L0 ∗ . L0 ∪ L1 , and
+
+4.4 Theorem The collection of regular languages is closed under set complement, intersection, and set difference.
+
+Proof The identity S ∩ T = (S c ∪ T c)c gives intersection in terms of union and complement. The prior lemma shows that regular languages are closed under union, so if we show that they are closed under complement then they are also closed under intersection. Similarly, the identity S −T = S ∪T c means that showing closure under complement will also show closure under set difference. To show that the complement of a regular language is also regular, fix a regular language L over some alphabet Σ. It is recognized by some deterministic Finite State machine M with input alphabet Σ. Define a new machine M̂ with the same states and transition function as M but whose accepting states are the complement, F M̂ = Q M − F M . We will show that the language of this machine is Σ∗ − L. Because M is deterministic, each input string τ is associated with a unique last state, the state that the machine is in after it consumes τ ’s last character, namely ∆(τˆ). Observe that ∆(τˆ) ∈ F M̂  if and only if ∆(τˆ) < FM . Thus the language of M̂ is the complement of the language of M and since this language is recognized by a Finite State machine, it too is regular.
+
+4.5 Example To show that this language is regular, either produce a machine that recognizes it
+
+L = {σ ∈ B∗ σ has an even number of 0’s and more than two 1’s }
+
+or note that L = L0 ∩ L1 where L0 = {σ ∈ B∗ σ has an even number of 0’s } and L1 = {σ ∈ B∗ σ has more than two 1’s }. Producing machines for those two is easy.
+
+So regular expressions, deterministic Finite State machines, and nondeterministic Finite State machines all describe the same set of languages, namely, the regular languages. The fact that we can describe these languages in so many different ways suggests that there is something natural and important about these languages. This is just like the fact that the equivalence of Turing machines, general recursive functions, and all kinds of other models suggests that the computable sets form a natural and important collection. Neither collection is just a historical artifact of what happened to be first explored.
+
+IV.5 Languages that are not regular
+
+The prior section gave a counting argument to show that there are languages that are not regular. Now we produce a technique to show that specific languages are not regular.
+
+The idea is that, although Finite State machines are finite, they can handle arbitrarily long inputs. This chapter’s first example, the power switch from Example 1.1, has only two states but even if we toggle it hundreds of times, it still keeps track of whether the switch is on or off. To handle these long inputs with only a small number of states, a machine must revisit states, that is, it must loop.
+
+Loops cause a pattern in what a machine accepts. The diagram shows a machine that accepts aabbbc (it only shows some of the states, those that the machine traverses in processing this input).
+
+qi3
+b
+q i2
+b
+ a
+q0
+ a
+ qi1
+ b
+ qi4
+ c
+ qi5
+
+Besides aabbbc, this machine must also accept a(abb)2 bc because that string takes the machine through the loop twice, and then to the accepting state. Likewise, this machine accepts a(abb)3 bc and looping more times pumps out more accepted strings.
+
+5.1 Theorem (Pumping Lemma) Let L be a regular language. Then there is a with constant p ∈ p N, decomposes the pumping into length three for components the language, σ = such α ⌢ β that every satisfying: string (1) σ ∈ the L |σ | ≥ ⌢γ  (3) all of the strings first two αγ components , α β 2γ , α β 3 γ are , . . short, . are also |α β | members ≤ p, (2) of β is the not language empty, and L.
+
+Proof Suppose that L is recognized by the Finite State machine M. Denote the number of states in M by p . Consider a string σ with |σ | ≥ p.
+
+Finite State machines perform one transition per character so the number of characters in an input string equals the number of transitions. The number of states that the machine visits is one more than the number of transitions; for instance, with a one-character input a machine visits two states (not necessarily distinct). Thus, in processing the input string σ , the machine must visit some state more than once. It must loop.
+
+Fix a repeated state, q . Also fix the first two substrings, ⟨s 0 , ... si ⟩ and  ⟨s0, ... s i , ... s j ⟩ , of σ that take the machine to state q . That is, j is minimal such that ∆(⟨sˆ 0 i, , ... j s j and =such q . Then that let the α extended = 0, ... ,transition s i be the function string that gives brings ∆(⟨sˆ the 0, machine ... si ⟩) = ⟩) ⟨s ⟩up to the loop, let β = ⟨si+1 , ... s j ⟩ is the string that brings the machine around the loop, and let γ = ⟨s j+1, ... sk ⟩ be the rest of σ . (Possibly one or both of α and γ is empty.) These strings satisfy conditions (1) and (2). (Choosing q to be a state that is repeated within the initial segment of σ , and chosing i and j to be minimal, guarantees that for instance if the string σ brings machine around a loop a hundred times then we don’t pick an α that includes the first ninety nine loops, and that therefore is longer than p .)
+
+For condition (3), this string
+
+α ⌢γ = ⟨s 0 , ... si , s j+1, ... sk ⟩
+
+brings the machine from the start state q 0 to q , and then to the same ending state as did σ . That is, ∆(αγˆ) = ∆(α ˆ βγ ) and so is an accepting state. The other strings in (3) work the same way. For instance, for α ⌢ β 2 ⌢γ = α ββγ = ⟨s0 , ... s i , s i+1, ... , s j− 1 , si+1 , ... s j+1 , ... s k ⟩ the substring α brings the machine from q 0 to the state q , the first β brings it around to q again, then the second β makes the machine loop to q yet again, and finally γ brings it to the same ending state as did σ .
+
+Typically we use the Pumping Lemma to show that a language is not regular through an argument by contradiction.
+
+5.2 Example The classic example is to show that this language of matched parentheses is not regular. The alphabet is the set of the two parentheses Σ = { ), ( } .
+
+L = { (n )n ∈ Σ ∗ n ∈ N } = {ε, (), (()), ((())) , (4 )4, ... }
+
+For contradiction, assume that it is regular. Then the Pumping Lemma says that L has a pumping length, p .
+
+Consider the string σ = (p ) p . It is an element of L and its length is greater than or equal to p so the Pumping Lemma applies. So σ decomposes into three substrings σ = α ⌢β ⌢ γ satisfying the conditions. Condition (1) is that the length of the prefix α ⌢ β is less than or equal to p . Because of this condition we know that both α and β are composed exclusively of open parentheses, (’s. Condition (2) is that β is not the empty string, so it contains at least one (.Condition (3) is that all of the strings αγ , α β 2γ , α β 3 γ , . . . are members of L. To get the desired contradiction, consider α β 2γ . Compared with σ = α βγ , this string has an extra β , which adds at least one open parenthesis without adding any balancing closed parentheses. In short, α β 2γ has more (’s than )’s. It is therefore not a member of L. But the Pumping Lemma says it must be a member of L, and therefore the assumption that L is regular is incorrect.
+
+We have seen many examples of things that regular expressions and Finite State machines can do. Here we see something that they cannot. Matching parentheses, and other types of matching, is something that we often want to do, for instance, in a compiler. So the Pumping Lemma helps us show that for some common computing tasks, regular languages are not enough.
+
+5.3 Example Recall that a palindrome is a string that reads the same backwards as forwards, such as bab, abbaabba, or a5 ba5 . We will prove that the language L = {σ ∈ Σ∗ σ R = σ } of all palindromes over Σ = { a, b } is not regular. For contradiction assume that this language is regular. The Pumping Lemma says that L has a pumping length. Call it p . Consider σ = ap bap , which is an element of L and has more than p characters. Thus it decomposes as σ = α βγ , subject to the three conditions. Condition (1) is that |α β | ≤ p and so both substrings α and β are composed entirely of a’s. Condition (2) is that β is not the empty string and so β consists of at least one a. Consider the list from condition (3), αγ , α β 2γ , α β 3γ , .. We will get the desired contradiction from the first element, αγ (the other list members also lead to a contradiction but we only need one). Compared to σ = α βγ , in αγ the β is gone. Because α and β consist entirely of a’s, the substring γ got σ ’s b, and must also have the ap that follows it. So in passing from σ = α βγ to αγ we’ve omitted at least one a before the b but none of the a’s after it, and therefore αγ is not a palindrome. This contradicts the Pumping Lemma’s third condition, that the strings in the list are all members of L.
+
+5.4 Remark In that example σ has three parts, σ = a p ⌢ b ⌢ ap , and it decomposes into three parts, σ = α ⌢ β ⌢γ . Don’t make the mistake of thinking that the two decompositions match. The Pumping Lemma does not says that α = a p , β = b, and γ = a p — indeed, as the example says the Pumping Lemma gives that β is not the b part. Instead, the Pumping Lemma only says that the first two strings together, α ⌢ β , consists exclusively of a’s. So it could be that α β = a P or it could well also be that the γ starts with some a’s that are then followed by ba p .
+
+5.5Example Consider L = { 0 m 1n ∈ B∗ m = n + 1 } = { 0, 001, 00011, ... }. Its members have a number of 0’s that is one more than the number of 1’s. We will prove that it is not regular. For contradiction assume otherwise, that L is regular, and set p as its pumping length. Consider σ = 0p+1 1 p ∈ L. Because |σ | ≥ p , the Pumping Lemma gives a decomposition σ = α βγ satisfying the three conditions. Condition (1) says that |α β | ≤ p , so that the substrings α and β have only 0’s. Condition (2) says that β has at least one character, necessarily a 0. Consider the list from Condition (3): αγ , α β 2γ , α β 3γ , . . . Compare its first entry, αγ , to σ (other entries would also yield a contradiction). The string αγ has fewer 0’s then does σ but the same number of 1’s. So the number of 0’s in αγ is not one more than its number of 1’s. Thus αγ < L, which contradicts the Pumping Lemma.
+
+We can interpret that example to say that Finite State machines cannot correctly recognize a predecessor-successor relationship. We can also use the Pumping Lemma to show Finite State machines cannot recognize other arithmetic relations.
+
+5.6 Example The language L = { a n n is a perfect square } = {ε, a, a4 , a9 , a16 , ... } is not regular. For, suppose otherwise. Fix a pumping length p and consider σ = a(p 2 ) , so that |σ | = p 2 . By the Pumping Lemma, σ decomposes into α βγ , subject to the three conditions. Condition (1) is that |α β | ≤ p , which implies 2 that |β | ≤ p. Condition (2) is that 0 < |β | . Now consider the strings αγ , α β γ , . . . The gap between the length |σ | = |α βγ | and the length |α β 2γ | is at most p , because 0 < |β | ≤ p . But the definition 2 of the language is that after σ the next longest string has length 2 (p + 1)2 = p + 2p + 1, which is strictly greater than p . Thus the length of α β γ is not a perfect square, which contradicts the Pumping Lemma’s assertion that α β 2 γ ∈ L. Sometimes we can solve problems by using the Pumping Lemma in conjunction with the closure properties of regular languages.
+
+5.7 Example The language L = {σ ∈ { a, b }∗ σ has as many m a’s as b’s } is not regular. To prove that, observe that the language L̂ = { a bn ∈ { a, b }∗ m, n ∈ N } is regular, described by the regular expression a*b*. Recall that the intersection of two regular languages is regular. But L ∩ L̂ is the set { an b n n ∈ N } and Example 5.2 shows that this language isn’t regular, after we substitute a and b for the parentheses. In previous sections we saw how to show that a language is regular, either by producing a Finite State machine that recognizes it or by producing a regular expression that describes it. Being able to show that a language is not regular nicely balances that. But our interest is motivated by more than symmetry. A Turing machine can solve the problem of Example 5.2, of recognizing strings of balanced parentheses, but we now know that a Finite State machine cannot. Therefore we now know that to solve this problem we need scratch memory. So the results in this section speak
+to the resources needed to solve the problems.
+
+Section
+IV.7 Pushdown machines
+
+No Finite State machine can recognize the language of balanced parentheses. So this machine model is not powerful enough to use, for instance, if you want to decide whether input strings are valid programs in a modern programming language. To handle nested parentheses the natural data structure is a stack. We will next see a machine type consisting of a Finite State machine with access to a pushdown stack.
+
+Like a Turing machine tape, a stack is unbounded storage. But it has restrictions that the tape does not. A stack doesn’t give random access to the elements. It is like the resturant dish dispenser below. When you pop a dish off, a spring pushes the remaining dishes up so you can reach the next one. When you push a new dish on, its weight compresses the spring so all the old dishes move down and the latest dish is the only one that you can reach. We say that this stack is LIFO, Last-In, First-Out.
+
+Below on the right is a sequence of views of a stack data structure. First the stack has two characters, g3 and g2. We push g1 on the stack, and then g0. Now, although g1 is on the stack, we don’t have immediate access to it. To get at g1 we must first pop off g0, as in the last stack shown.
+
+g3
+ g1
+ g0
+ g1
+g2
+ g3
+ g1
+ g3
+g2
+ g3
+ g2
+g2
+
+Once something is popped, it is gone. We could include in the machine a state whose intuitive meaning is that we have just popped g0 but because there are finitely many states that strategy has limits.
+
+Definition To define these machines we will extend the definition of Finite State machines, starting with deterministic machines.
+
+7.1 Definition A Pushdown machine has a finite set of states Q = {q 0 , ... qn−1 } including a start state q0 and a subset F ⊆ Q of accepting states, a nonempty input alphabet Σ and a nonempty stack alphabet Γ, as well as a transition function ∆ : Q × (Σ ∪ { B, ε }) × Γ → Q × Γ∗.
+
+We assume that the stack alphabet Γ contains the character that we use to mark the stack bottom, ⊥.† The rest of Γ is g0, g1, etc. We also assume that the tape alphabet Σ does not contain the blank, B, or the character ε .‡
+
+The transition function describes how these machines act. For the input ⟨qi , s, д j ⟩ ∈ Q × (Σ ∪ { B , ε }) × Γ there are two cases. When the character s is an element of Σ ∪ { B } then an instruction ∆(qi , s, д j ) = ⟨q k , γ ⟩ applies when the machine is in state qi with the tape head reading s and with the character дj on top of the stack. If there is no such instruction then the computation halts, with the input string not accepted. If there is such an instruction then the machine does this: (i) the read head moves one cell to the right, (ii) the machine pops дj off the stack and pushes the characters of the string γ = ⟨д i 0 , ... дim ⟩ onto the stack in the order from дim first to дi 0 last, and (iii) the machine enters state qk . The other case for the input ⟨q i , s, дj ⟩ is when the character s is ε . Everything is the same except that the tape head does not move. (We use this case to manipulate the stack without consuming any input.)
+
+† Read that character aloud as “bottom.” ‡ The definition allows ε to appear in two separate places, as the second component of ∆’s inputs and also as the empty string, from Γ∗ . However, one of those is in the inputs and the other is in the outputs so it isn’t ambiguous.
+
+
+As with Finite State machines, Pushdown machines don’t write to the tape but only consume the tape characters. However, unlike Finite State machines they can fail to halt, see Exercise 7.6.
+
+The starting configuration has the machine in state q 0, reading the first character of σ ∈ Σ∗ , and with the stack containing only ⊥. A machine accepts its input σ if, after starting in its starting configuration and after scanning all of σ , it eventually enters an accepting state q ∈ F .
+
+Notice that at each step the machine pops a character off the stack. If we want to leave the stack unchanged then as part of the instruction we must push that character back on. In addition, if the machine reaches a configuration where the stack is empty then it will lock up and be unable to perform any more instructions.†
+
+7.2 Example This grammar generates the language of balanced parentheses.
+
+S → [ S ] | SS | ε
+ LBAL = {ε, [], [[]] , [][], [[][]], [[[]]], ... }
+
+The Pumping Lemma shows that no Finite State machine recognizes this language. But it is recognized by a Pushdown machine. This machine has states Q = {q0, q1, q2 } with accepting states F = {q1 } , and languages Σ = { [, ] } and Γ = { g0, ⊥ } . The table gives its transition function ∆, with the instructions numbered for ease of reference.
+
+Instr no
+ Input
+ Output
+0
+ qo , [, ⊥
+ q 0 , ‘g0⊥’
+1
+ qo , [, g0
+ q 0 , ‘g0g0’
+2
+ qo , ], g0
+ q 0 , ε
+3
+ qo , ], ⊥
+ q 2 , ε
+4
+ qo , B, ⊥
+ q 1 , ε
+
+It keeps a running tally of the number of [’s minus the number of ]’s, as the number of g0’s on the stack. This computation starts with the input [[]][] and ends in an accepting state.
+
+† An alternative to the final state definition of acceptance we are using is to define that a machine accepts its input if after consuming that input, it empties the stack. The definitions are equivalent in that a string is accepted by either type of machine if it is accepted by the other.
+
+Step
+ Configuration
+0
+ [ [ ] ] [ ]
+ ⊥
+q0
+1
+ [ q [ 0
+ ] ] [ ]
+ g0 ⊥
+2
+ [ [ ] ] [ ]
+ g0 g0 ⊥
+q0
+3
+ [ [ ] ] [ ]
+ g0 ⊥
+q 0
+4
+ [ [ ] ] [ ]
+ ⊥
+q0
+5
+ [ [ ] ] [ ]
+ g0 ⊥
+q 0
+6
+ [ [ ] ] [ ]
+ ⊥
+q0
+[ [ ] ] [ ]
+7
+ q 1
+
+7.3 Example Recall that a palindrome is a string that reads the same forwards and backwards, σ = σ R . This language of palindromes uses a c character as a middle marker.
+
+LMM = {σ ∈ { a, b, c }∗ σ = τ ⌢ c ⌢ τ R for some τ ∈ { a, b }∗ } When the Pushdown machine below is reading τ it pushes characters onto the stack; g0 when it reads a and g1 when it reads b. That’s state q 0 . When the machine hits the middle c, it reverses. It enters q1 and starts popping; when reading a it checks that the popped character is g0, and when reading b it checks that what popped is g1. If the machine hits the stack bottom at the same moment that the input runs out, then it goes into the accepting state q3.
+
+Instr no
+ Input
+ Output
+ Instr no
+ Input
+ Output
+0
+ q 0 , a , ⊥
+ q0, ‘g0⊥’
+ 9
+ q1, a, g0
+ q 1 , ε
+1
+ q 0 , b , ⊥
+ q0, ‘g1⊥’
+ 10
+ q1, a, g1
+ q 2 , ε
+2
+ q 0 , ε, ⊥
+ q3, ε
+ 11
+ q1, a, ⊥
+ q 2 , ε
+3
+ q 0 , a , g0
+ q0, ‘g0g0’
+ 12
+ q1, b, g0
+ q 2 , ε
+4
+ q 0 , a , g1
+ q0, ‘g0g1’
+ 13
+ q1, b, g1
+ q 1 , ε
+5
+ q 0 , b , g0
+ q0, ‘g1g0’
+ 14
+ q1, b, ⊥
+ q 2 , ε
+6
+ q 0 , b , g1
+ q0, ‘g1g1’
+ 15
+ q1, B, g0
+ q 2 , ε
+7
+ q 0 , c , g0
+ q1, ‘g0’
+ 16
+ q1, B, g1
+ q 2 , ε
+8
+ q 0 , c , g1
+ q1, ‘g1’
+ 17
+ q1, B, ⊥
+ q 3 , ε
+
+Step
+ Configuration
+0
+ b a c a b
+ ⊥
+q0
+1
+ b a c a b
+ g1 ⊥
+q 0
+2
+ b a c a b
+ g0 g1 ⊥
+q0
+3
+ b a c a b
+ g0 g1 ⊥
+q 1
+4
+ b a c a b
+ g1 ⊥
+q1
+5
+ b a c a b
+ q 1
+ ⊥
+b a c a b
+6
+q3
+
+7.4 Remark Stack machines are often used in practice, particularly for running hardware. Here is a ‘Hello World’ program in the PostScript printer language.
+
+/Courier % name the font
+20 selectfont % font size in points, 1/72 of an inch
+72 500 moveto % position the cursor
+(Hello world!) show % stroke the text
+showpage % print the page
+
+The interpreter pushes Courier on the stack, and then on the second line pushes 20 on the stack. It then executes selectfont, which pops two things off the stack to set the font name and size. After that it moves the current point, and places the text on the page. Finally, it draws that page to paper.
+
+This language is quite efficient. But it is more suited to situations where the code is written by a program, such as with a word processor or L A TEX, than to situations where a person is writing it.
+
+Nondeterministic Pushdown machines To get nondeterminism we alter the definition in two ways. The first is minor: we don’t need the input character blank, B, as a nondeterministic machine can guess when the input string ends.
+
+The second alteration changes the transition function ∆. We now allow the same input to give different outputs, ∆ : Q × (Σ ∪ {ε }) × Γ → P (Q × Γ ∗). (If the set of outputs is empty then we take the machine to freeze, resulting in a computation that does not accept the input.) As always with nondeterminism, we can conceptualize this either as that the the computation evolves as a tree or as that the machine chooses one of the outputs.
+
+7.5 Example This grammar generates the language of all palindromes over B∗. P → ε | 0 | 1 | 0P0 | 1P1  LPAL = {ε, 0 , 1, 00, 11, 000, 010, 101, 111 , ... } This language is not recognized by any Finite State machine, but it is recognized by a Pushdown machine.
+
+This machine has Q = {q0 , q1 , q2 } with accepting states F = {q2 } , and languages Σ = B and Γ = { g0, g1 , ⊥ }.
+
+During its first phase it puts g0 on the stack when it reads the input 0 and puts g1 on the stack when it reads 1. During the second phase, if it reads 0 then it only proceeds if the popped stack character is g0 and if it reads 1 then it only proceeds if it popped g1.
+
+Instrno
+0
+1
+2
+3
+4
+5
+6
+7
+8
+Input
+qo , 0, ⊥
+qo , 1, ⊥
+qo , ε, ⊥
+qo , 0, g0
+qo , 1, g0
+qo , 0, g1
+qo , 1, g1
+qo , 0, g0
+qo , 0, g1
+Output
+q 0 , ‘g0⊥’
+q 0 , ‘g1⊥’
+q 2 , ε
+q 0 , ‘g0g0’
+q 0 , ‘g1g0’
+q 0 , ‘g0g1’
+q 0 , ‘g1g1’
+q 1 , ‘g0g0’
+q 1 , ‘g0g1’
+Instrno
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+Input
+qo , 1, g0
+qo , 1, g1
+qo , 0, g0
+qo , 0, g1
+qo , 1, g0
+qo , 1, g1
+q 1 , 0, g0
+q 1 , 1, g1
+q 1 , 0, g0
+q 1 , 1, g1
+Output
+q 1 , ‘g1g0’
+q 1 , ‘g1g1’
+q 1 , ‘g0’
+q 1 , ‘g1’
+q 1 , ‘g0’
+q 1 , ‘g1’
+q 1 , ε
+q 1 , ε
+q 2 , ε
+q 2 , ε
+
+How does the machine know when to change from phase one to two? It is nondeterministic — it guesses. For instance, compare instructions 3 and 7, which show the same input associated with two different outputs.
+
+Here the machine accepts the string 0110. In the calculation it uses instructions 0, 9, 16, and 17.
+
+Step
+0
+1
+2
+3
+4
+Configuration
+0 1 1 0
+ ⊥
+q0
+0 1 1 0
+ g0 ⊥
+q 0
+0 1 1 0
+ g1 g0 ⊥
+q1
+0 1 1 0
+ g0 ⊥
+q 1
+0 1 1 0
+ ⊥
+q2
+
+Here is the machine accepting 01010 using instructions 0, 4, 12, 16, and 17.
+
+Step
+0
+1
+2
+3
+4
+5
+Configuration
+0 1 0 1 0
+ ⊥
+q0
+0 1 0 1 0
+ g0 ⊥
+q 0
+0 1 0 1 0
+ g1 g0 ⊥
+q0
+0 1 0 1 0
+ g1 g0 ⊥
+q 1
+0 1 0 1 0
+ g0 ⊥
+q1
+0 1 0 1 0
+ ⊥
+q2
+
+The nondeterminism is crucial. In the first example, after step 1 the machine is in state q 0 , is reading a 1, and the character that will be popped off the stack is g0. Both instructions 3 and 9 apply to that configuration. But, applying instruction 3 would not lead to the machine accepting the input string. The computation shown instead applies instruction 9, going to state q 1 , whose intuitive meaning is that the machine switches from pushing to popping.
+
+We have given two mental models of nondeterminism. One is that the machine guesses when to switch, and that for this even-length string making that switch halfway through is the right guess. We say the string is accepted because there exists a guess that is correct, that ends in acceptance. (That there exist incorrect guesses is not relevant.)
+
+Taking the other view of nondeterminism omits guessing and instead sees the computuation as a tree. In one branch the machine applies instruction 3 and in another it applies instruction 9. By definition, for this machine the string is accepted because there is at least one accepting branch (the above table of the sequence of configurations shows the tree’s accepting branch).
+
+Input strings with odd length are different. In the language of guessing, the machine needs to guess that it must switch from pushing to popping at the middle character, but it must not push anything onto the stack since that thing would never get popped off. Instead, when instruction 12 pops the top character g1 off the stack, as all instructions do when they are executed, it immediately pushes it back on. The net effect is that in this turn around from pushing to popping the stack is unchanged.
+
+Recall that deterministic Finite State machines can do any jobs that nondeterministic ones can do. The palindrome result shows that for Pushdown machines the situation is different. While nondeterministic Pushdown machines can recognize the language of palindromes, that job cannot be done by deterministic Pushdown machines. So for Pushdown machines, nondeterminism changes what can be done.
+
+Intuitively, Pushdown machines are between Turing machines and Finite State machines in that they have a kind of unbounded read/write memory, but it is limited. We’ve proved that they are more powerful than Finite State machines because they can recognize the language of balanced parentheses.
+
+There is a relevant result that we will mention but not prove: there are jobs that Turing machines can do but that no Pushdown machine can do. One is the decision problem for the language {σ ⌢ σ σ ∈ B∗ }. The intuition is that this language contains strings such as 1010, 10101010, etc. A Pushdown machine can push the characters onto the stack, as it does for the language of balanced parentheses, but then to check that the second half matches the first it would need to pop them off in reverse order.†
+
+The diagram below summarizes. The box encloses all languages of bitstrings, all subsets of B∗ . The nested sets enclose those languages recognized by some Finite State machine, or some Pushdown machine, etc.
+
+A
+B
+C
+D
+Class
+A
+B
+C
+D
+Machine type
+Finite State, including nondeterministic
+Pushdown
+nondeterministic Pushdown
+Turing
+
+Context free languages In the section on Grammars we restricted our attention to production rules where the head consists of a single nonterminal, such as S → cS. An example of a rule where the head is not of that form is cSb → aS. With this rule we can substitute for S only if it is preceded by c and followed by b. A grammar with rules of this type is called context sensitive because substitutions can only be done in a context.
+
+If a language has a grammar in which all the rules are of the first type, of the type we described in Chapter III’s Section 2, then it is a context free language. Most modern programming languages are context free, including C, Java, Python, and Scheme. So grammars that are context sensitive, without the restriction of being required to be context free, are much less common in practice.
+
+We will state, but not prove, the connection with this section: a language is recognized by some nondeterministic Pushdown machine if and only if it has a context free grammar.
+
+† Another way to tell that the set of languages recognized by an nondeterministic Pushdown machine is a strict subset of the set of languages recognized by a Turing machine is to note that there is no Halting Problem for Pushdown machines. We can write a program that inputs a string and a Pushdown machine, and decides whether it is accepted. But of course we cannot write such a program for Turing machines. Since the languages differ and since anything computed by a Pushdown machine can be computed by a Turing machine, the languages of Pushdown machines must be a strict subset.
+
+Extra
+
+IV.A Regular expressions in the wild
+
+Regular expressions are often used in practice. For instance, imagine that you need to search a web server log for the names of all the PDF’s downloaded from a subdirectory. A user on a Unix-derived system might type this. 
+
+grep "/linearalgebra/.*ṗdf" /var/log/apache2/access.log
+
+The grep utility looks through the file line by line, and if a line matches the pattern then grep prints that line. That pattern, starting with the subdirectory /linearalgebra/, is an extended regular expression.
+
+That is, in practice we often need text operations, and regular expressions are an important tool. Modern programming languages such as Python and Scheme include capabilities for extended regular expressions, sometimes called regexes, that go beyond the small-scale theory examples we saw earlier. These extensions fall into two categories. The first is convenience constructs that make easier something that would otherwise be doable, but awkward. The second is that some of the extensions to regular expressions in modern programming languages go beyond mere abbreviations. More on this later.
+
+First, the convenience extensions. Many of them are about sheer scale: our earlier alphabets had two or three characters but in practice an alphabet must include at least ASCII’s printable characters: a – z, A –Z, 0 – 9, space, tab, period, dash, exclamation point, percent sign, dollar sign, open and closed parenthesis, open and closed curly braces, etc. It may may even contain all of Unicode’s more than one hundred thousand characters. We need managable ways to describe larger sets of characters.
+
+Consider matching a digit. The regular expression (0|1|2|3|4|5|6|7|8|9) is too verbose for an often-needed list. One abbreviation that modern languages allow is [0123456789], omitting the pipe characters and using square brackets, which in extended regular expressions are metacharacters. Or, because the digit characters are contiguous in the character set,† we can shorten it further to [0-9]. Along the same lines, [A-Za-z] matches a single English letter.
+
+† This is true in both ASCII and Unicode.
+
+
+To invert the set of matched characters, put a caret ‘^’ as the first thing inside the bracket (and note that it is a metacharacter). Thus, [^0-9] matches a non-digit and [^A-Za-z] matches a character that is not an ASCII letter.
+
+The most common lists have short abbreviations. Another abbreviation for the digits is \d. Use \D for the ASCII non-digits, \s for the whitespace characters (space, tab, newline, formfeed, and line return) and \S for ASCII characters that are non-whitespace. Cover the alphanumeric characters (upper and lower case ASCII letters, digits, and underscore) with \w and cover the ASCII non-alphanumeric characters with \W. And — the big kahuna — the dot ‘.’ is a metacharacter that matches any member of the alphabet at all.† We saw the dot in the grep example that began this discussion.
+
+Example Canadian postal codes have seven characters: the fourth is a space, the first, third, and sixth are letters, and the others are digits. The regular expression [a-zA-Z]\d[a-zA-Z] \d[a-zA-Z]\d describes them.
+
+Example Dates are often given in the ‘dd/mm/yy’ format. This matches: \d\d/\d\d/\d\d.
+
+Example In the twelve hour time format some typical times strings are ‘8:05 am’ or ‘10:15 pm’. You could use this (note the empty string at the start). (|0|1)\d:\d\d\s(am|pm)
+
+Recall that in the regular expression a(b|c)d the parentheses and the pipe are not there to be matched. They are metacharacters, part of the syntax of the regular expression. Once we expand the alphabet Σ to include all characters, we run into the problem that we are already using some of the additional characters as metacharacters.
+
+To match a metacharacter prefix it with a backslash, ‘\’. Thus, to look for the string ‘(Note’ put a backslash before the open parentheses \(Note. Similarly, \| matches a pipe and \[ matches an open square bracket. Match backslash itself with \\. This is called escaping the metacharacter. The scheme described above for representing lists with \d, \D, etc is an extension of escaping.
+
+Operator precedence is: repetition binds most strongly, then concatenation, and then alternation (force different meanings with parentheses). Thus, ab* is equivalent to a(b*), and ab|cd is equivalent to (ab)|(cd).
+
+Quantifiers In the theoretical cases we saw earlier, to match ‘at most one a’ we used ε |a. In practice we can write something like (|a), as we did above for the twelve hour times. But depicting the empty string by just putting nothing there can be confusing. Modern languages make question mark a metacharacter and allow you to write a? for ‘at most one a’.
+
+
+† Programming languages in practice by default have the dot match any character except newline. In adition, they have a way to make it also match newline.
+
+For ‘at least one a’ modern languages use a+, so the plus sign is another metacharacter. More generally, we often want to specify quantities. For instance, to match five a’s extended regular expressions use the curly braces as metacharacters, with a{5}. Match between two and five of them with a{2,5} and match at least two with a{2,}. Thus, a+ is shorthand for a{1,}.
+
+As earlier, to match any of these metacharacters you must escape them. For instance, To be or not to be\? matches the famous question.
+
+Cookbook All of the extensions to regular expressions that we are seeing are driven by the desires of working programmers. Here is a pile of examples showing them accomplishing practical work, matching things you’d want to match.
+
+Example US postal codes, called ZIP codes, are five digits. We can match them with \d{5}.
+
+Example North American phone numbers match \d{3} \d{3}-\d{4}.
+
+Example The regular expression (-|\+)?\d+ matches an integer, positive or negative. The question mark makes the sign optional. The plus sign makes sure there is at least one digit; it is escaped because + is a metacharacter.
+
+Example The expression [a-fA-F0-9]+ matches a natural number representation in hexadecimal. Programmers often prefix such a representation with 0x so the expression becomes (0x)?[a-fA-F0-9]+.
+
+Example A C language identifier begins with an ASCII letter or underscore and then can have arbitrarily many more letters, digits, or underscores: [a-zA-Z_]\w*.
+
+Example Match a user name of between three and twelve letters, digits, underscores, or periods with [\w\.]{3,12}. Use .{8,} to match a password that is at least eight characters long.
+
+Example Match a valid username on Reddit: [\w-]{3,20}. The hyphen, because it comes last in the square brackets, matches itself. And no, Reddit does not allow a period in a username.
+
+Example For email addresses, \S+@\S+ is a commonly used extended expression.†
+
+Example Match the text inside a single set of parentheses with \([^()]*\).
+
+Example This matches a URL, a web address such as http://joshua.smcvt.
+edu/computing. This regex is more intricate than prior ones so it deserves some explanation. It is based on breaking URL’s into three parts: a scheme such as http followed by a colon and two forward slashes a host such as joshua.smcvt.edu, and a path such as /computing (the standard also allows a query string that follows a question mark but this regex does not handle those). (https?|ftp)://([^\s/?\.#]+\.?){1,4}(/[^\s]*)?
+
+A.15Notice the https?, so the scheme can be http or https, as well as ftp. After a colon and two forward slashes comes the host part, consisting of some fields separated by periods. We allow almost any character in those fields, except for a space, a question mark, a period or a hash. At the end comes a path. The specification allows paths to be case sensitive but the regex here has only lower case.
+
+But wait! there’s more! You can also match the start of a line and end of line with the metacharacters caret ‘^’ and dollar sign ‘$’.
+
+
+† This is naive in that there are elaborate rules for the syntax of email addresses (see below). But it is a reasonable sanity check.
+
+Example Match lines starting with ‘ Theorem’ using ^Theorem. Match lines ending with end{equation*} using end{equation\*}$.
+
+The regex engines in modern languages let you specify that the match is case insensitive (although they differ in the syntax).
+
+Example An HTML document tag for an image, such as <img src="logo.jpg">, uses either of the keys src or img to give the name of the file containing the image that will be served. Those strings can be in upper case or lower case, or any mix. Racket uses a ‘?i:’ syntax to mark part of the regex as insensitive: \\s+(?i:(img|src))= (note also the double backslash, which is how Racket escapes the ‘s’). Beyond convenience The regular expression engines that come with recent programming languages have capabilities beyond matching only those languages that recongized by Finite State machines.
+
+A.16Example The web document language HTML uses tags such as <b>boldface text</b> and <i>italicized text</i>. Matching any one is straightforward, for instance <b>[^<]*</b>. But for a single expression that matches them all you would seem to have to do each as a separate case and then combine cases with a pipe. However, instead we can have the system remember what it finds at the start and look for that again at the end. Thus, Racket’s regex <([^>]+)>[^<]*</\\1> matches HTML tags like the ones given. Its second character is an open parenthesis, and the \\1 refers to everything between that open parenthesisand the matching close parenthesis. (As you might guess from the 1, you can also have a second match with \\2, etc.) That is a back reference. It is very convenient. However, it gives extended regular expressions more power than the theoretical regular  expressions that we studied earlier.
+
+A.17Example This is the language of squares over Σ = { a, b }.
+
+L = {σ ∈ Σ∗ | σ = τ ⌢τ for some τ ∈ Σ ∗ }
+
+Some members are aabaab, baaabaaa, and aa. The Pumping Lemma shows that the language of squares is not regular; see Exercise A.35. Describe this language with the regex (.+)\1; note the back-reference.
+
+Downsides Regular expressions are powerful tools, and this goes double for enhanced regexes. As illustrated by the examples above, some of their uses are: to validate usernames, to search text files, and to filter results. But they can come with costs also.
+
+For instance, the regular expression for twelve hour time from Example A.3 ( ε |0|1)\d:\d\d\s(am|pm) does indeed match ‘8:05 am’ and ‘10:15 pm’ but it falls short in some respects. One is that it requires am or pm at the end, but times are often are given without them. We could change the ending to ( ε |\s am|\s pm), which is a bit more complex but does solve the issue.
+
+Another issue is that it also matches some strings that you don’t want, such as 13:00 am or 9:61 pm. We can solve this as with the prior paragraph, by listing the cases.†
+
+(01|02|...|11|12):(01|02|...|59|60)(\s am|\s pm)
+
+This is like the prior fixup, in that it does indeed fix the issue but it does so at a cost of complexity, since it amounts to a list of the allowed substrings.
+
+Another example is that not every string matching the Canadian postal expression in Example A.1 has a corresponding post office — for one thing, no valid codes begin with Z. And ZIP codes work the same way; there are fewer than 50 000 assigned ZIP codes so many five digits strings are not in use. Changing the regular expressions to cover only those codes actually in use would make them little more lists of strings, (which would change frequently).
+
+The canonical extreme example is the regex for valid email addresses. We show here just five lines out of its 81 but that’s enough to make the point about its complexity.
+
+(?:(?:\r\n)?[ \t])*(?:(?:(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(?:\r\n)?[ \t]
+)+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[ \t]))*"(?:(?:
+\r\n)?[ \t])*)(?:\.(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\031]+(?:(?:(
+?:\r\n)?[ \t])+|\Z|(?=[\["()<>@,;:\\".\[\]]))|"(?:[^\"\r\\]|\\.|(?:(?:\r\n)?[
+\t]))*"(?:(?:\r\n)?[ \t])*))*@(?:(?:\r\n)?[ \t])*(?:[^()<>@,;:\\".\[\] \000-\0
+
+† Some substrings are elided so it fits in the margins, .
+
+And, even if you do have an address that fits the standard, you don’t know if there is an email server listening at that address.
+
+At this point regular expressions may be starting to seem a little less like a fast and neat problem-solver and a little more like a potential development and maintenance problem. The full story is that sometimes a regular expression is just what you need for a quick job, and sometimes they are good for more complex tasks also. But some of the time the cost of complexity outweighs the gain in expressiveness. This power/complexity tradeoff is often referred to online by citing this quote from J Zawinski.
+
+The notion that regexps are the solution to all problems is . . . braindead. . . . Some people,when confronted with a problem, think "I know, I’ll use regular expressions." Now they have two problems.
